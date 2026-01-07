@@ -1,1 +1,1 @@
-# Solve Go exercises and test code
+# Solve and test Go exercises

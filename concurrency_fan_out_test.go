@@ -35,13 +35,11 @@ func TestFanOut(t *testing.T) {
 	t.Run("Five workers on ten jobs", func(t *testing.T) {
 		// Fill input with jobs
 		jobs := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-		input := make(chan int)
-		go func() {
-			for _, j := range jobs {
-				input <- j
-			}
-			close(input)
-		}()
+		input := make(chan int, len(jobs))
+		for _, j := range jobs {
+			input <- j
+		}
+		close(input)
 
 		// Fan out jobs
 		numWorkers := 5

@@ -1,15 +1,15 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"math/rand"
 	"testing"
 	"time"
-
-	"math/rand"
 )
 
-// requestTimeout executes request
-func requestTimeout(request func(), timeout float64) float64 {
+// requestTimeout executes request with timeout.
+func requestTimeout(request func(), timeout float64) (float64, error) {
 	done := make(chan float64)
 	go func() {
 		start := time.Now()
@@ -17,12 +17,14 @@ func requestTimeout(request func(), timeout float64) float64 {
 		done <- time.Since(start).Seconds()
 	}()
 	ticker := time.Tick(500 * time.Millisecond)
+	timer := time.After(time.Duration(timeout) * time.Second)
 	for {
 		select {
 		case elapsed := <-done:
-			return elapsed
-		case <-time.After(time.Duration(timeout) * time.Second):
-			return -1
+			fmt.Printf("elapsed %f seconds", elapsed)
+			return elapsed, nil
+		case <-timer:
+			return -1, errors.New("timeout")
 		case <-ticker:
 			fmt.Println("request handling")
 		}
@@ -36,8 +38,7 @@ func requestTimeoutTestHelper(t *testing.T, request func(), timeout float64, suc
 	} else {
 		t.Logf("expect request to last more than %f seconds", timeout)
 	}
-	if elapsed := requestTimeout(request, timeout); success && elapsed >= timeout ||
-		!success && elapsed < timeout {
+	if _, err := requestTimeout(request, timeout); success && err != nil || !success && err == nil {
 		t.Fatal()
 	}
 }

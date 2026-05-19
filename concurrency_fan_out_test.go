@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// fanOut returns output channels filled with values from input
+// fanOut returns output channels filled with values from input.
 func fanOut(input <-chan int, num int) []chan int {
 	output := make([]chan int, num)
 	for i := range num {
